@@ -1,0 +1,57 @@
+name: Marketing Site CI
+
+# A separate, lightweight workflow for marketing-site/ -- it's a distinct
+# deployable with no shared release cadence with the Flutter app or
+# integrity-worker (see CLAUDE.md), so it gets its own CI file rather than
+# a job bolted onto ci.yml, matching integrity-worker-ci.yml's precedent.
+#
+# Currently just one check: privacy-policy.html and terms-of-service.html
+# are legal documents whose top-of-page "Effective <date>" line is meant to
+# reflect the last time their actual content changed. It's easy to edit the
+# body text and forget the date line sits right above it -- happened for
+# real on 2026-08-30 (a Cloud Backup cross-platform caveat added to the
+# privacy policy without bumping "Effective August 10, 2026"). Nothing
+# else in this repo would have caught that; flutter analyze/test don't
+# touch marketing-site/ at all.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "marketing-site/public/privacy-policy.html"
+      - "marketing-site/public/terms-of-service.html"
+  pull_request:
+    branches: [main]
+    paths:
+      - "marketing-site/public/privacy-policy.html"
+      - "marketing-site/public/terms-of-service.html"
+
+jobs:
+  check-effective-date:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify the "Effective <date>" line was updated alongside any other content change
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE="${{ github.event.pull_request.base.sha }}"
+          else
+            BASE="${{ github.event.before }}"
+          fi
+
+          fail=0
+          for f in marketing-site/public/privacy-policy.html marketing-site/public/terms-of-service.html; do
+            if git diff --quiet "$BASE" HEAD -- "$f" 2>/dev/null; then
+              continue
+            fi
+            if git diff "$BASE" HEAD -- "$f" | grep -qE '^[+-].*class="meta">Effective'; then
+              echo "$f: Effective date line was updated. OK."
+            else
+              echo "::error file=$f::$f's body changed but its \"Effective <date>\" line wasn't. If this is a real policy/content change, bump the date to today. If it's genuinely cosmetic (a typo, formatting) and doesn't warrant a new effective date, that's a real exception -- go ahead and merge past this failed check rather than adding a fake date bump just to satisfy it."
+              fail=1
+            fi
+          done
+          exit $fail

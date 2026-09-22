@@ -1,0 +1,45 @@
+name: CI
+
+# 'issue#**' also covers the epic-workflow convention's own epic branches
+# (issue#<N>/PascalTitle, same naming as any other feature branch) — without
+# it, a sub-issue PR targeting an epic branch as its base (rather than main)
+# gets zero CI at all, since GitHub only runs a `pull_request`-triggered
+# workflow when its `branches` filter matches the PR's *base*, not its head.
+# Found 2026-09-21 investigating #334 (into issue#324/ReferralProgramV2)
+# reporting no checks whatsoever. `**` (not `*`) is required since branch
+# names contain a real `/` (issue#324/ReferralProgramV2) that a single `*`
+# won't cross.
+on:
+  push:
+    branches: [main, "issue#**"]
+    paths: ["cassandras_10_key/**", ".github/workflows/ci.yml"]
+  pull_request:
+    branches: [main, "issue#**"]
+    paths: ["cassandras_10_key/**", ".github/workflows/ci.yml"]
+
+jobs:
+  analyze-and-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cassandras_10_key
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          # Pinned rather than `channel: stable` (found investigating #178,
+          # 2026-08-12): an unpinned `stable` silently floated CI to Flutter
+          # 3.47.0 while this project's actual dev machine was still on
+          # 3.44.9 (see `flutter --version` locally) — a real version drift
+          # CI is supposed to catch, not cause. That drift produced a real
+          # Windows Impeller rendering regression on real hardware (a
+          # `flutter build windows --release` binary launched and stayed
+          # permanently blank white, reproducing identically on an
+          # unmodified build with no #178 changes at all — ruling out this
+          # issue's own code as the cause). Bump deliberately, in step with
+          # this project's local Flutter version, not silently via CI.
+          flutter-version: 3.44.9
+          cache: true
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test

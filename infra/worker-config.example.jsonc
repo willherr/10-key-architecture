@@ -1,0 +1,65 @@
+// Redacted shape of the backend Worker's wrangler config. Every ID below is
+// a placeholder, not a real one, this shows the structure (bindings, the
+// vars-vs-secrets split, environment overrides) rather than live infra.
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "example-worker-name",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-08",
+  "workers_dev": true,
+  "observability": {
+    "enabled": true
+  },
+  "routes": [
+    { "pattern": "api.example.com", "custom_domain": true }
+  ],
+  // Non-sensitive config (a base URL, a public product identifier) lives
+  // here as committed vars. Only real secrets (API tokens, webhook signing
+  // keys) go through `wrangler secret put`, never in this file.
+  "vars": {
+    "PAYMENT_API_BASE": "https://api.example-payments.com",
+    "PAYMENT_PRODUCT_ID": "<product-id>"
+  },
+  // A scheduled cron backstop that reconciles anything a reactive webhook
+  // handler might have missed, independent of request traffic.
+  "triggers": {
+    "crons": ["0 */6 * * *"]
+  },
+  // Entitlement records, one row per grant. A named binding, not a raw
+  // connection string, so the same code works against wrangler's local
+  // dev D1 file and the real deployed database without branching.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "example-entitlements",
+      "database_id": "<d1-database-id>"
+    }
+  ],
+  // A real, separately-deployed environment for end-to-end sandbox
+  // testing, so a test transaction never touches production's live
+  // secrets or custom domain. `routes: []` deliberately overrides the
+  // top-level route: Wrangler environments don't reliably drop an
+  // inherited route otherwise, and this must never accidentally bind to
+  // the real production domain. Named environments don't inherit the
+  // top-level `vars`/`triggers` either, both are repeated here on purpose.
+  "env": {
+    "sandbox": {
+      "name": "example-worker-name-sandbox",
+      "routes": [],
+      "vars": {
+        "PAYMENT_API_BASE": "https://sandbox-api.example-payments.com",
+        "PAYMENT_PRODUCT_ID": "<sandbox-product-id>"
+      },
+      "triggers": {
+        "crons": ["0 */6 * * *"]
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "example-entitlements",
+          "database_id": "<d1-database-id>"
+        }
+      ]
+    }
+  }
+}
