@@ -6,7 +6,7 @@
 
 - Cross-platform from one codebase: Android, Windows, and web, from the same Flutter project.
 - 52 automated test files covering the app's core logic, run on every change.
-- Three separate CI workflows ([`ci.yml`](.github/workflows/ci.yml) for the app, [`integrity-worker-ci.yml`](.github/workflows/integrity-worker-ci.yml) for the backend Worker, [`marketing-site-ci.yml`](.github/workflows/marketing-site-ci.yml) for the marketing site), each scoped to only run against the paths it actually covers, copied here verbatim since they contain no business logic or live identifiers.
+- Three separate CI workflows ([`ci.yml`](ci-workflows/ci.yml) for the app, [`integrity-worker-ci.yml`](ci-workflows/integrity-worker-ci.yml) for the backend Worker, [`marketing-site-ci.yml`](ci-workflows/marketing-site-ci.yml) for the marketing site), each scoped to only run against the paths it actually covers, copied here verbatim since they contain no business logic or live identifiers. They live in [`ci-workflows/`](ci-workflows/), not `.github/workflows/`, on purpose: this repo has no actual app/worker/site source for them to run against, so they're reference reading, not live CI.
 - A real purchase flow (Polar.sh) for the paid tier, live in production, backed by a Cloudflare Worker + D1 for entitlements. See [`ARCHITECTURE.md`](ARCHITECTURE.md) for the real shape (redacted) and [`infra/worker-config.example.jsonc`](infra/worker-config.example.jsonc) for the config structure (placeholders, not live values).
 - A documented deploy path per deployable, see [`DEPLOYMENT.md`](DEPLOYMENT.md).
 
