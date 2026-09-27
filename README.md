@@ -32,3 +32,7 @@ The actual skills behind this (the epic-branch workflow, the PR pipeline, the li
 - [`DEPLOYMENT.md`](DEPLOYMENT.md): how a change actually reaches production.
 - [10-key.will-i-am.dev](https://10-key.will-i-am.dev): the app itself.
 - [will-i-am.dev](https://will-i-am.dev): everything else under the same practice.
+
+## Support
+
+If this is useful, you can support it here: https://buymeacoffee.com/will.i.am.dev
