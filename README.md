@@ -31,7 +31,7 @@ The actual skills behind this (the epic-branch workflow, the PR pipeline, the li
 - [`ARCHITECTURE.md`](ARCHITECTURE.md): the real system shape, redacted.
 - [`DEPLOYMENT.md`](DEPLOYMENT.md): how a change actually reaches production.
 - [10-key.will-i-am.dev](https://10-key.will-i-am.dev): the app itself.
-- [will-i-am.dev](https://will-i-am.dev): everything else under the same practice.
+- [will-i-am.dev](https://will-i-am.dev/?utm_source=github&utm_medium=referral&utm_campaign=10-key-architecture&utm_content=readme): everything else under the same practice.
 
 ## Support
 
